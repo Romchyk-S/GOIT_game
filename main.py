@@ -11,95 +11,17 @@ import random
 
 import os
 
+import player_controls as pc
+
+import create_surface as cs
+
+
 print()
 
 animation_pics_dir = 'Бандерогусак для анімації (goose)'
 
 goose_pics = os.listdir(animation_pics_dir)
 
-def create_surface(main_display: pygame.surface.Surface, size: tuple[int], color: tuple[int], coordinates: tuple[int]):
-        
-    new = pygame.Surface(size)
-    
-    new.fill(color)
-    
-    new_rect = pygame.Rect(*coordinates, *size)
-    
-    main_display.blit(new, new_rect)
-    
-    pygame.display.flip()
-    
-    return new, new_rect
-
-
-def check_keys(key: pygame.key.ScancodeWrapper, movements: dict[bool], skip_next: bool, curr_speed: list[int], player_speed_num: int) -> tuple:
-    
-    if skip_next:
-        
-        skip_next = False
-        
-    else:
-        
-        if movements.get('down') and movements.get('right'):
-            
-            curr_speed = [player_speed_num, player_speed_num]
-            
-            skip_next = True
-            
-        elif movements.get('down') and movements.get('left'):
-             
-            curr_speed = [-player_speed_num, player_speed_num]
-            
-            skip_next = True
-            
-        elif (movements.get('down') and movements.get('up')) or (movements.get('right') and movements.get('left')):
-            
-            curr_speed = [0, 0]
-            
-            skip_next = True
-            
-        elif movements.get('up') and movements.get('right'):
-            
-            curr_speed = [player_speed_num, -player_speed_num]
-            
-            skip_next = True
-            
-        elif movements.get('up') and movements.get('left'):
-             
-            curr_speed = [-player_speed_num, -player_speed_num]
-            
-            skip_next = True
-        
-        elif movements.get('down'):
-       
-            curr_speed = [0, player_speed_num]
-            
-        elif movements.get('right'):
-            
-            curr_speed = [player_speed_num, 0]
-            
-        elif movements.get('left'):
-        
-            curr_speed = [-player_speed_num, 0]
-            
-        elif movements.get('up'):
-        
-            curr_speed = [0, -player_speed_num]
-    
-    return curr_speed, skip_next
-
-def check_borders(player_rect: pygame.rect.Rect, window_size: tuple, speed: list[int]) -> list[int]:
-
-    if player_rect.bottom >= window_size[1] or player_rect.top < 0:
-    
-        speed[1] = -speed[1]
-        
-    if player_rect.left < 0 or player_rect.right >= window_size[0]:
-        
-        speed[0] = -speed[0]
-        
-    return speed
-        
 
 
 # first width, then height
@@ -149,18 +71,16 @@ main_display = pygame.display.set_mode(window_size)
 
 FPS = pygame.time.Clock()
 
-player, player_rect = create_surface(main_display, player_size, player_color, player_coordinates)
+player, player_rect = cs.create_surface(main_display, player_size, player_color, player_coordinates)
 
 
-playing = True
+playing, skip_next = True, False
 
 points = 0
 
-skip_next = False
+player_speed = 4
 
-player_speed_num = 4
-
-player_speed = [0, 0]
+player_movement = [0, 0]
 
 enemies, bonuses = [], []
 
@@ -199,7 +119,7 @@ while playing:
             # x, y
             enemy_coordinates = window_size[0], random.randint(int(window_size[1]*0.1), int(window_size[1]*0.95))
             
-            new_enemy = list(create_surface(main_display, enemy_size, enemy_color, enemy_coordinates))
+            new_enemy = list(cs.create_surface(main_display, enemy_size, enemy_color, enemy_coordinates))
             
             new_enemy.append([random.randint(-8, -4), 0])
             
@@ -210,7 +130,7 @@ while playing:
             # x, y
             bonus_coordinates = random.randint(window_size[0]*0.6, window_size[0]), 0
             
-            new_bonus = list(create_surface(main_display, bonus_size, bonus_color, bonus_coordinates))
+            new_bonus = list(cs.create_surface(main_display, bonus_size, bonus_color, bonus_coordinates))
             
             new_bonus.append([0, random.randint(4, 8)])
             
@@ -236,9 +156,9 @@ while playing:
             movements = {'down': key[pygame.K_DOWN] or key[pygame.K_s], 'left': key[pygame.K_LEFT] or key[pygame.K_a], 
                          'right': key[pygame.K_RIGHT] or key[pygame.K_d], 'up': key[pygame.K_UP] or key[pygame.K_w]}
             
-            player_speed, skip_next = check_keys(key, movements, skip_next, player_speed, player_speed_num)
+            player_speed, skip_next = pc.check_keys(key, movements, skip_next, player_movement, player_speed)
             
-    player_speed = check_borders(player_rect, window_size, player_speed)
+    player_speed = pc.check_borders(player_rect, window_size, player_speed)
     
     background_x_1 -= background_move
     
