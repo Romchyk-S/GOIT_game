@@ -162,9 +162,7 @@ player_speed_num = 4
 
 player_speed = [0, 0]
 
-enemies = []
-
-bonuses = []
+enemies, bonuses = [], []
 
 CREATE_ENEMY = pygame.USEREVENT + 1
 
